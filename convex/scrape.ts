@@ -7,6 +7,8 @@ export type SiteInfo = {
   description: string;
   text: string;
   colors: string[];
+  brandName: string | null;
+  brandNotes: string | null; // personality, audience, fonts
   logoUrl: string | null;
   imageUrls: string[]; // best first
 };
@@ -25,7 +27,7 @@ export async function scrapeSite(rawUrl: string): Promise<SiteInfo> {
   return await plainFetch(url);
 }
 
-async function firecrawl(url: string): Promise<SiteInfo> {
+export async function firecrawl(url: string): Promise<SiteInfo> {
   const res = await fetch("https://api.firecrawl.dev/v2/scrape", {
     method: "POST",
     headers: { Authorization: `Bearer ${process.env.FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
@@ -56,6 +58,15 @@ async function firecrawl(url: string): Promise<SiteInfo> {
     description: meta.description ?? meta.ogDescription ?? "",
     text: String(d.markdown ?? "").slice(0, MAX_TEXT),
     colors,
+    brandName: typeof branding.brandName === "string" ? branding.brandName : null,
+    brandNotes:
+      [
+        branding.personality && `Personality: ${Object.entries(branding.personality).map(([k, v]) => `${k} ${v}`).join(", ")}`,
+        branding.typography?.fontFamilies?.heading && `Heading font: ${branding.typography.fontFamilies.heading}`,
+        branding.colorScheme && `Color scheme: ${branding.colorScheme}`,
+      ]
+        .filter(Boolean)
+        .join(". ") || null,
     logoUrl: branding.images?.logo ?? branding.logo ?? null,
     imageUrls: dedupe(images).slice(0, 12),
   };
@@ -93,6 +104,8 @@ async function plainFetch(url: string): Promise<SiteInfo> {
     description: meta("description") ?? meta("og:description") ?? "",
     text: text.slice(0, MAX_TEXT),
     colors: theme ? [theme] : [],
+    brandName: null,
+    brandNotes: null,
     logoUrl: logo ? abs(logo) : null,
     imageUrls: dedupe(
       [meta("og:image"), meta("twitter:image"), ...imgs.filter((s) => !/logo|icon|sprite|pixel|\.svg/i.test(s))]

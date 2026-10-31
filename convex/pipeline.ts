@@ -125,7 +125,7 @@ async function plan(ctx: ActionCtx, jobId: Id<"jobs">) {
     `Brief: ${job.brief}`,
     user.brand?.name && `Brand: ${user.brand.name}`,
     user.brand?.notes && `Brand notes: ${user.brand.notes}`,
-    site && `Website (${site.url}):\nTitle: ${site.title}\nDescription: ${site.description}\nBrand colors: ${site.colors.join(", ") || "unknown"}\n\nPage content:\n${site.text}`,
+    site && `Website (${site.url}):\nTitle: ${site.title}\nDescription: ${site.description}\nBrand colors: ${site.colors.join(", ") || "unknown"}${site.brandNotes ? `\nBrand: ${site.brandNotes}` : ""}\n\nPage content:\n${site.text}`,
     parent?.storyboard && `This is a revision. Previous storyboard:\n${JSON.stringify(parent.storyboard)}\nKeep what works; apply the revision request.`,
     assets.length
       ? `${assets.length} images are attached (indices 0-${assets.length - 1}).`
@@ -180,7 +180,7 @@ async function plan(ctx: ActionCtx, jobId: Id<"jobs">) {
   const renderProps: RenderProps = {
     storyboard,
     scenes,
-    brandName: user.brand?.name ?? site?.title?.split(/[|\-–]/)[0].trim() ?? null,
+    brandName: user.brand?.name ?? site?.brandName ?? site?.title?.split(/[|\-–]/)[0].trim() ?? null,
     logoUrl,
     musicUrl: null, // resolved by the worker from public/music/<mood>.mp3
   };
