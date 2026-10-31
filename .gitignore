@@ -1,0 +1,9 @@
+node_modules
+out
+.env.local
+.env
+.photon-cursor
+worker.log
+*.log
+.lingcode/
+.mcp.json
